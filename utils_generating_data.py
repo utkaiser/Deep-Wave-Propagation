@@ -102,11 +102,11 @@ def initial_condition_gaussian(vel, mode, res_padded):
         wx, wy, wtc = WaveEnergyComponentField_tensor(
             u0, ut0, vel.unsqueeze(dim=0), dx=dx
         )
-        return torch.stack([wx, wy, wtc], dim=1)
+        return torch.stack([wx, wy, wtc], dim=1), u0
 
 
 def one_iteration_pseudo_spectral_tensor(
-    u_n_k, f_delta_x=2.0 / 128.0, f_delta_t=(2.0 / 128.0) / 20.0, delta_t_star=0.06
+    u_n_k, u_elapse, f_delta_x=2.0 / 128.0, f_delta_t=(2.0 / 128.0) / 20.0, delta_t_star=0.06
 ):
     """
 
@@ -128,7 +128,7 @@ def one_iteration_pseudo_spectral_tensor(
         u_n_k[:, 2, :, :].clone(),
         u_n_k[:, 3, :, :].clone(),
         f_delta_x,
-        torch.sum(torch.sum(torch.sum(u_n_k[:, 0, :, :].clone()))),
+        torch.sum(torch.sum(torch.sum(u_elapse))),
     )
     vel = u_n_k[:, 3, :, :].clone()
     u_prop, u_t_prop = pseudo_spectral_tensor(
@@ -137,4 +137,4 @@ def one_iteration_pseudo_spectral_tensor(
     u_x, u_y, u_t_c = WaveEnergyComponentField_tensor(
         u_prop, u_t_prop, vel.unsqueeze(dim=1), f_delta_x
     )
-    return torch.stack([u_x, u_y, u_t_c], dim=1)
+    return torch.stack([u_x, u_y, u_t_c], dim=1), u_prop

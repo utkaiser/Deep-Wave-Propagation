@@ -36,29 +36,32 @@ def get_model(
 
     return model
 
-def pseudo_spectral_solutions(u_energy, vel, n_it, dx, dt, dt_star):
+def pseudo_spectral_solutions(u_energy, u_elapse, vel, n_it, dx, dt, dt_star):
     print(f"Solve wave equation using pseudo-spectral method.")
 
     b, n_comp, w, h = u_energy.shape
     target = torch.zeros([n_it, n_comp, w, h])
+    target_u_elapse = torch.zeros([n_it, w, h])
 
     for i in range(n_it):
 
-        u_energy = one_iteration_pseudo_spectral_tensor(
+        u_energy, u_elapse = one_iteration_pseudo_spectral_tensor(
             u_n_k=torch.cat(
                 [u_energy, torch.from_numpy(vel).unsqueeze(dim=0).unsqueeze(dim=0)],
                 dim=1,
             ),
+            u_elapse=u_elapse,
             f_delta_x=dx,
             f_delta_t=dt,
             delta_t_star=dt_star,
         )
         target[i] = u_energy.clone()
+        target_u_elapse[i] = u_elapse.clone()
 
-    return target
+    return target, target_u_elapse
 
 def visualize_parareal(
-    pseudo_spectral_tensor, parareal_tensor, n_parareal, n_it, f_delta_x, vel
+    pseudo_spectral_tensor, parareal_tensor, n_parareal, n_it, f_delta_x, vel, u
 ):
     fig = plt.figure(figsize=(30, 10))
 
@@ -73,7 +76,7 @@ def visualize_parareal(
             u_energy[2].unsqueeze(dim=0),
             torch.from_numpy(vel).unsqueeze(dim=0),
             f_delta_x,
-            torch.sum(torch.sum(u_energy[0])),
+            torch.sum(u),
         )
         w = WaveEnergyField_tensor(
             u.squeeze(), ut.squeeze(), torch.from_numpy(vel), f_delta_x
@@ -95,7 +98,7 @@ def visualize_parareal(
                     u_energy[0, 2].unsqueeze(dim=0),
                     torch.from_numpy(vel).unsqueeze(dim=0),
                     f_delta_x,
-                    torch.sum(torch.sum(u_energy[0, 0])),
+                    torch.sum(torch.sum(u)),
                 )
                 w = WaveEnergyField_tensor(
                     u.squeeze(), ut.squeeze(), torch.from_numpy(vel), f_delta_x

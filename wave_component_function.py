@@ -37,7 +37,7 @@ def WaveSol_from_EnergyComponent_tensor(wx, wy, wtc, c, dx, sumv):
     wtc : (pytorch tensor) energy wave component, u derived by t and divided by c
     c : (numpy tensor) velocity profile dependent on x_1 and x_2
     dx : (float) time step in both dimensions / grid spacing
-    sumv : (float) sum of first energy wave component, i.e. wx
+    sumv : (float) sum of u0
 
     Returns
     -------
@@ -51,7 +51,7 @@ def WaveSol_from_EnergyComponent_tensor(wx, wy, wtc, c, dx, sumv):
         vx : (numpy tensor) energy wave component, u derived by x_1
         vy : (numpy tensor) energy wave component,  u derived by x_2
         dx : (float) time step in both dimensions / grid spacing
-        sumv : (float) sum of first energy wave component, i.e. vx
+        sumv : (float) sum of u0
 
         Returns
         -------

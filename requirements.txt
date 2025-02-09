@@ -1,3 +1,5 @@
 torch
 matplotlib
-numpy
+numpy<2
+scipy
+scikit-image

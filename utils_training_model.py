@@ -86,6 +86,7 @@ def fetch_data_end_to_end(data_paths, batch_size, additional_test_paths):
                             torch.from_numpy(np_array["Uy"]),
                             torch.from_numpy(np_array["Utc"]),
                             torch.from_numpy(np_array["vel"]),
+                            torch.from_numpy(np_array["u_phys"])
                         ),
                         dim=2,
                     )
@@ -153,7 +154,7 @@ class Model_end_to_end(nn.Module):
         self.model_upsampling = UNet(wf=1, depth=3, scale_factor=self.param_dict["res_scaler"]).double()
         self.model_upsampling.to(device)
 
-    def forward(self, x):
+    def forward(self, x, u_elapse):
         """
         Parameters
         ----------
@@ -175,7 +176,7 @@ class Model_end_to_end(nn.Module):
             )
 
         # velocity verlet
-        prop_result = self.model_numerical(downsampling_res)
+        prop_result = self.model_numerical(downsampling_res, u_elapse)
 
         # up sampling component
         if self.upsampling_type == "Interpolation":
@@ -259,7 +260,7 @@ class Numerical_solver(torch.nn.Module):
         self.c_delta_t = c_delta_t
         self.delta_t_star = delta_t_star
 
-    def forward(self, restr_output):
+    def forward(self, restr_output, u_elapse):
         """
         Parameters
         ----------
@@ -278,7 +279,7 @@ class Numerical_solver(torch.nn.Module):
             torch.Tensor.double(restr_output[:, 2, :, :]).to(device),
             vel_c.to(device),
             self.c_delta_x,
-            torch.sum(torch.sum(torch.Tensor.double(restr_output[:, 0, :, :]))),
+            torch.sum(torch.sum(torch.Tensor.double(u_elapse))),
         )
 
         # G delta t (coarse iteration)
